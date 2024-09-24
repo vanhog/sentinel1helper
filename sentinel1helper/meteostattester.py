@@ -16,7 +16,8 @@ df = pd.read_csv(in_file)
 
 dt_dats, dats, nodats = sh.get_numpy64_dates(df.columns)
 
-ts_data = df[dats]
+df_part = df[df['PS_ID']==27540388]
+ts_data = df_part[dats]
 
 print(df.iloc[0]['X'])
 from pyproj import Transformer 
@@ -45,19 +46,25 @@ data = data.fetch()
 # Get daily data
 #
 # Plot line chart including average, minimum and maximum temperature
+print(df_part[nodats])
 data.plot(y=['tavg'])
 plt.plot(dt_dats, ts_data.iloc[0])
-plt.show()
+
 print(data.head())
 # print(data.index)
-# omega_g = 1. / 180
-# fs = 1. / 1
-#
-# sos = sg.butter(3, omega_g, 'lp', fs=fs, output='sos')
-# filtered = sg.sosfiltfilt(sos, data['tavg'])
-#
-# plt.figure()
-# plt.plot(data.index, data['tavg'])
-# plt.plot(data.index, filtered, 'k')
-# plt.show()    
-# plt.show()
+omega_g = 1. / 180
+fs = 1. / 1
+
+sos = sg.butter(3, omega_g, 'lp', fs=fs, output='sos')
+filtered = sg.sosfiltfilt(sos, data['tavg'])
+
+omega_g = 1./90
+fs = 1./6
+sosts = sg.butter(3, omega_g, 'lp', fs=fs, output='sos')
+filteredts = sg.sosfiltfilt(sos, ts_data.iloc[0])
+
+plt.figure()
+#plt.plot(data.index, data['tavg'])
+#plt.plot(data.index, filtered, 'k')
+plt.plot(dt_dats, filteredts)
+plt.show()    
