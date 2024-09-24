@@ -5,14 +5,18 @@ from scipy import signal as sg
 import sentinel1helper as sh 
 import pandas as pd
 
-in_file = '/media/hog/fringe1/dev/data/testn.csv'
-in_file = '/media/hog/fringe1/dev/data/tl5_l2b_044_02_0001-0200.csv'
+in_file = '/media/data/dev/testdata/testn.csv'
+in_file = '/media/data/dev/testdata/tl5_l2b_044_02_0001-0200.csv'
 #in_file = '/media/hog/fringe1/sc/MSCDATA/Roenne-Overview/aoi_msc_gpk/tl5_l2b_aoi_msc_gpkg.gpkg'
 #in_layer = 'tl5_a_044_01_mscaoi'
 #in_file = '/media/nas01/hog/sc/sc_data/BBD_TL5/schleswig-holstein/l2b_schleswig-holstein_clipped.gpkg'
 #in_layer = 'ASCE_044_02'
 #df = sh.read_geofile(in_file, layer=in_layer, engine='pyogrio')
 df = pd.read_csv(in_file)
+
+dt_dats, dats, nodats = sh.get_numpy64_dates(df.columns)
+
+ts_data = df[dats]
 
 print(df.iloc[0]['X'])
 from pyproj import Transformer 
@@ -41,7 +45,8 @@ data = data.fetch()
 # Get daily data
 #
 # Plot line chart including average, minimum and maximum temperature
-data.plot(y=['tavg', 'tmin', 'tmax'])
+data.plot(y=['tavg'])
+plt.plot(dt_dats, ts_data.iloc[0])
 plt.show()
 print(data.head())
 # print(data.index)
