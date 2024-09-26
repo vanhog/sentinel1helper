@@ -29,6 +29,8 @@ class gmdata():
         self.nodats, \
         self.dt_dats_asDays = self.get_datetime_dates(self.__data.columns)
         
+        self.__data[self.dats] = self.__data[self.dats].astype('float')
+        
         self.dt_dats_padded = []
         self.dt_dats_padded_asDays = []
         self.pad_days(cycle)
@@ -53,7 +55,7 @@ class gmdata():
             out_file = gpd.read_file(filename=geofile, layer=layer, engine=engine)
         
         gpd.options.io_engine = cached_engine
-        
+
         return out_file
 
     def pad_days(self, cycle = 6):
