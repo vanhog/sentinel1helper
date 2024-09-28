@@ -10,6 +10,9 @@ import datetime as dt
 import numpy as np
 import re
 from numpy import datetime64
+from scipy import signal as sg
+from meteostat import Stations, Daily, Point
+
 
 datepattern = 'date_\d{8}'
 
@@ -27,8 +30,9 @@ class gmdata():
         self.dt_dats,\
         self.dats,\
         self.nodats, \
-        self.dt_dats_asDays = self.get_datetime_dates(self.__data.columns)
-        
+        self.dt_dats_asDays = self.get_numpy64_dates(self.__data.columns)
+        self.dt_dats_asDays = np.array(self.dt_dats_asDays)
+
         self.__data[self.dats] = self.__data[self.dats].astype('float')
         
         self.dt_dats_padded = []
@@ -70,13 +74,15 @@ class gmdata():
             dt_dats_padded_asDays.append((i - dt_dats_padded[0]).days)
             
         self.dt_dats_padded         = dt_dats_padded
-        self.dt_dats_padded_asDays  = dt_dats_padded_asDays
+        self.dt_dats_padded_asDays  = np.array(dt_dats_padded_asDays).astype('float')
         
     def get_datetime_dates(self, in_list):
         
         out_dt_dats = []
         out_dats    = []
         out_nodats  = []
+        out_dt_dats_asDays = [0]       
+
         
         for i in in_list:
             if re.match(datepattern, i):
@@ -85,16 +91,74 @@ class gmdata():
             else:
                 out_nodats.append(i)
          
-        out_dt_dats_asDays = [0]       
         for i in out_dt_dats[1:]:
-            out_dt_dats_asDays.append(i - out_dt_dats[0])
+            out_dt_dats_asDays.append((i - out_dt_dats[0]).days)
+    
+        out_dt_dats_asDays = [float(i) for i in out_dt_dats_asDays]
+        
+        return out_dt_dats, out_dats, out_nodats, out_dt_dats_asDays
+    
+    def get_numpy64_dates(self, in_list):
+    
+        out_dt_dats = []
+        out_dats    = []
+        out_nodats  = []
+        out_dt_dats_asDays = [0]       
+
+        
+        for i in in_list:
+            if re.match(datepattern, i):
+                out_dt_dats.append(datetime64(i[-8:-4]+'-'+i[-4:-2]+'-'+i[-2:]))
+                out_dats.append(i)
+            else:
+                out_nodats.append(i)
+                
+        for i in out_dt_dats[1:]:
+            out_dt_dats_asDays.append((i - out_dt_dats[0]).astype('float'))
     
         return out_dt_dats, out_dats, out_nodats, out_dt_dats_asDays
 
 
-def pad_ts():
-    return
+    def get_ts(self, in_dataframe):
+        
+        return np.array(in_dataframe[self.dats].values.astype('float32'))
+    
+    def pad_ts(self, in_array):
+        result = np.interp(self.dt_dats_padded_asDays, self.dt_dats_asDays, in_array)
+        return result
 
+
+    def filt_ts(self, ts, omega_g, fs, ftype = 'lp', output = 'sos'):
+        
+        sos = sg.butter(3, omega_g, ftype , fs=fs, output = output)
+        filtered = sg.sosfiltfilt(sos, ts)
+        
+        return filtered
+    
+    def get_padded_ts(self, in_df):
+        a = self.pad_ts(self.get_ts(in_df))
+        #print('len a: ', len(a), 'type a: ', type(a))
+        #fa = data.filt_ts(a, 1./180, 1./6)
+        return a
+    
+def get_meteostat(in_ps):
+    
+    print(in_ps['X'])
+    from pyproj import Transformer 
+    transformer = Transformer.from_crs(25832, 4326) 
+    ps_lat,ps_lon = transformer.transform(in_ps['X'], in_ps['Y'])
+    print(ps_lon, ps_lat)
+    # Set time period
+    ps_loc = Point(ps_lat, ps_lon,float(in_ps['Z']))
+    start = dt.datetime(2015, 4, 6)
+    end = dt.datetime(2021, 12, 30)
+    
+    stations = Stations()
+    stations = stations.nearby(ps_loc._lat, ps_loc._lon)
+    data = Daily(ps_loc, start, end)
+    data = data.fetch()
+    
+    return data
 
 def get_numpy64_dates(in_list):
     

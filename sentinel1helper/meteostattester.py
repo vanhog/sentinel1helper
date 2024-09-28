@@ -4,18 +4,18 @@ import matplotlib.pyplot as plt
 from scipy import signal as sg
 import sentinel1helper as sh 
 import pandas as pd
-from sh1runner import in_file
+#from sh1runner import in_file
 
 in_file = '/media/data/dev/testdata/testn.csv'
 in_file = '/media/data/dev/testdata/tl5_l2b_044_02_0001-0200.csv'
-in_file = '/media/hog/fringe1/sc/MSCDATA/Roenne-Overview/aoi_msc_gpk/tl5_l2b_aoi_msc_gpkg.gpkg'
-in_layer = 'tl5_a_044_01_mscaoi'
+#in_file = '/media/hog/fringe1/sc/MSCDATA/Roenne-Overview/aoi_msc_gpk/tl5_l2b_aoi_msc_gpkg.gpkg'
+#in_layer = 'tl5_a_044_01_mscaoi'
 #in_file = '/media/nas01/hog/sc/sc_data/BBD_TL5/schleswig-holstein/l2b_schleswig-holstein_clipped.gpkg'
 #in_layer = 'ASCE_044_02'
 #df = sh.read_geofile(in_file, layer=in_layer, engine='pyogrio')
 #df = pd.read_csv(in_file)
-df = sh.gmdata(in_file, layer=in_layer, engine='pyogrio')
-
+#df = sh.gmdata(in_file, layer=in_layer, engine='pyogrio')
+df = sh.gmdata(in_file)
 dt_dats = df.dt_dats
 dats = df.dats 
 nodats = df.nodats 
@@ -27,8 +27,8 @@ dfdata = df.data
 
 
 df_part = dfdata[dfdata['PS_ID']==27540388]
-#df_part = dfdata[dfdata['PS_ID']=='27534195']
-df_part = dfdata[dfdata['PS_ID']==26319089]
+df_part = dfdata[dfdata['PS_ID']=='27534195']
+#df_part = dfdata[dfdata['PS_ID']==26319089]
 ts_data = df_part[dats]#.to_numpy(dtype='float')
 
 
