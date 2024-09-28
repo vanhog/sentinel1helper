@@ -45,5 +45,8 @@ corrres = np.correlate(fab_aligned, a, mode='same')
 plt.figure()
 plt.plot(corrres)
 print(np.corrcoef(fab_aligned,a))
+plt.figure()
+print(data.get_diffs(dfdata.iloc[locnum]))
+plt.plot(data.dt_dats, data.get_diffs(dfdata.iloc[locnum]))
 plt.show()
 
