@@ -137,9 +137,18 @@ class gmdata():
     
     def get_padded_ts(self, in_df):
         a = self.pad_ts(self.get_ts(in_df))
-        #print('len a: ', len(a), 'type a: ', type(a))
-        #fa = data.filt_ts(a, 1./180, 1./6)
         return a
+    
+    def get_diffs(self, in_data):
+        if isinstance(in_data, np.ndarray):
+            intermediatets = in_data 
+        else:
+            intermediatets = self.get_ts(in_data) 
+        
+        out_diffs = [0]   
+        for i,j in zip(intermediatets[0:-1], intermediatets[1:]):
+            out_diffs.append(float(j-i))
+        return out_diffs
     
 def get_meteostat(in_ps):
     
