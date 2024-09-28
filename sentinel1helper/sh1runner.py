@@ -47,6 +47,14 @@ plt.plot(corrres)
 print(np.corrcoef(fab_aligned,a))
 plt.figure()
 print(data.get_diffs(dfdata.iloc[locnum]))
-plt.plot(data.dt_dats, data.get_diffs(dfdata.iloc[locnum]))
+plt.plot(data.dt_dats_padded, fa )
+plt.plot(data.dt_dats_padded, fab_aligned, 'r')
+plt.stem(data.dt_dats_padded,  data.get_diffs(fa))
+plt.stem(data.dt_dats_padded, data.get_diffs(fab_aligned), 'r')
+plt.figure()
+plt.plot()
+
 plt.show()
 
+# polynom an die Differenzen fitten und dann ein Verhältnis bestimmen
+#https://www.smythstoys.com/de/de-de/spielzeug/puppen-und-zubehoer/gabbys-dollhouse/gabbys-dollhouse-gabbys-purrfect-party-puppenhaus-mit-figur-und-zubehoer/p/236369
