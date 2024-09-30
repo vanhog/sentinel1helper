@@ -1,6 +1,7 @@
 import sentinel1helper as sh1
 from matplotlib import pyplot as plt
 import numpy as np 
+from docutils.languages import fa
 
 
 in_file = '/media/data/dev/testdata/testn.csv'
@@ -11,7 +12,7 @@ in_file = '/media/data/dev/testdata/tl5_l2b_044_02_0001-0200.csv'
 
 data = sh1.gmdata(in_file, engine='pyogrio')
 
-locnum = 150
+locnum = 5
 print(data.dt_dats)
 print(data.dt_dats_padded_asDays)
 print(type(data.data))
@@ -44,15 +45,33 @@ plt.plot(c.index, fab, 'red')
 corrres = np.correlate(fab_aligned, a, mode='same')
 plt.figure()
 plt.plot(corrres)
+plt.title('cross correlation')
 print(np.corrcoef(fab_aligned,a))
 plt.figure()
 print(data.get_diffs(dfdata.iloc[locnum]))
 plt.plot(data.dt_dats_padded, fa )
 plt.plot(data.dt_dats_padded, fab_aligned, 'r')
-plt.stem(data.dt_dats_padded,  data.get_diffs(fa))
-plt.stem(data.dt_dats_padded, data.get_diffs(fab_aligned), 'r')
+
 plt.figure()
-plt.plot()
+plt.title('Deviation')
+
+fadiffs = data.get_diffs(fa)
+fadiffs /= np.max(np.abs(fadiffs),axis=0)
+
+fab_aligneddiffs = data.get_diffs(fab_aligned)
+fab_aligneddiffs /= np.max(np.abs(fab_aligneddiffs),axis=0)
+
+plt.stem(data.dt_dats_padded,  fadiffs)
+plt.stem(data.dt_dats_padded, fab_aligneddiffs, 'r')
+print(np.corrcoef(fadiffs, fab_aligneddiffs))
+# fdiff = [i-j if j else 0 for i,j in zip(fab_aligneddiffs, fadiffs)]
+#
+# plt.figure()
+# plt.plot(fdiff)
+# # plt.figure()
+# plt.plot(np.convolve(fdiff, fab_aligneddiffs))
+# plt.plot(fab_aligned*200-1000)
+
 
 plt.show()
 
