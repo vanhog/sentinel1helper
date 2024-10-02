@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from scipy import signal as sg
 import sentinel1helper as sh 
 import pandas as pd
+import numpy as np
 #from sh1runner import in_file
 
 in_file = '/media/data/dev/testdata/testn.csv'
@@ -41,7 +42,7 @@ ps_lat,ps_lon = transformer.transform(df_part.iloc[0]['X'], df_part.iloc[0]['Y']
 print(ps_lon, ps_lat)
 # Set time period
 ps_loc = Point(ps_lat, ps_lon,float(df_part.iloc[0]['Z']))
-start = dt.datetime(2016, 4, 6)
+start = dt.datetime(1999, 5, 1)
 end = dt.datetime(2021, 12, 30)
 
 stations = Stations()
@@ -73,13 +74,17 @@ fs = 1. / 1
 sos = sg.butter(3, omega_g, 'lp', fs=fs, output='sos')
 filtered = sg.sosfiltfilt(sos, data['tavg'])
 
-omega_g = 1./90
-fs = 1./6
-sosts = sg.butter(3, omega_g, 'lp', fs=fs, output='sos')
-filteredts = sg.sosfiltfilt(sos, ts_data.iloc[0])
+
 
 plt.figure()
-#plt.plot(data.index, data['tavg'])
-#plt.plot(data.index, filtered, 'k')
-plt.plot(dt_dats, filteredts)
+plt.plot(data.index, data['tavg'])
+plt.plot(data.index, filtered, 'k')
+
+dys = range(0,len(data.index))
+polytemp = np.polyfit(dys, data['tavg'],1)
+polytempvals = np.polyval(polytemp, dys)
+print(polytemp)
+plt.plot(data.index, polytempvals)
 plt.show()    
+
+
