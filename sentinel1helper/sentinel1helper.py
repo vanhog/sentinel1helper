@@ -8,10 +8,12 @@ from datetime import datetime
 import geopandas as gpd
 import datetime as dt
 import numpy as np
+import pandas as pd
 import re
 from numpy import datetime64
 from scipy import signal as sg
 from meteostat import Stations, Daily, Point
+from matplotlib import _rc_params_in_file
 
 
 datepattern = 'date_\d{8}'
@@ -183,3 +185,38 @@ def get_numpy64_dates(in_list):
             out_nodats.append(i)
 
     return out_dt_dats, out_dats, out_nodats
+
+
+def read_gwgang(in_file):
+    gdf = gpd.read_file(in_file)
+    print('nach Einlesen: ', len(gdf))
+    dt_index = []
+    for i in gdf['Datum']:
+        dt_index.append(datetime.strptime(i, '%d.%m.%Y %H:%M:%S'))
+    idx = pd.DatetimeIndex(dt_index)
+    gdf.index=idx
+    gdf = gdf. drop(columns=['Datum'])
+    gdf['Messwert'] = pd.to_numeric(gdf['Messwert'])
+    print('vor Operation: ', len(gdf))
+    
+    
+    setdays = []
+    setlocs = []
+    
+    
+    for idx,i in gdf.iterrows():
+        if idx.date() not in setdays:
+            setdays.append(idx.date())
+            #setlocs.append(gdf.index.get_loc(idx))
+            setlocs.append(idx)
+            
+    for i,j in zip(gdf.index[0:-1], gdf.index[1:]):
+        if (j-i).days > 1:
+            print(j,i, (j-i).days)
+    print('setdays: ', len(setdays), (gdf.index[-1]-gdf.index[0]).days)
+    # gdf = gdf.loc[setlocs]
+    # print('nach Operation: ', len(gdf))    
+    # start = dt.datetime(2015, 4, 6)
+    # end = dt.datetime(2021, 12, 30)
+    return setdays
+        

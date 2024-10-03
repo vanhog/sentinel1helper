@@ -77,3 +77,4 @@ plt.show()
 
 # polynom an die Differenzen fitten und dann ein Verhältnis bestimmen
 #https://www.smythstoys.com/de/de-de/spielzeug/puppen-und-zubehoer/gabbys-dollhouse/gabbys-dollhouse-gabbys-purrfect-party-puppenhaus-mit-figur-und-zubehoer/p/236369
+
