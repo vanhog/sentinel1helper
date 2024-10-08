@@ -186,37 +186,63 @@ def get_numpy64_dates(in_list):
 
     return out_dt_dats, out_dats, out_nodats
 
-
-def read_gwgang(in_file):
-    gdf = gpd.read_file(in_file)
-    print('nach Einlesen: ', len(gdf))
-    dt_index = []
-    for i in gdf['Datum']:
-        dt_index.append(datetime.strptime(i, '%d.%m.%Y %H:%M:%S'))
-    idx = pd.DatetimeIndex(dt_index)
-    gdf.index=idx
-    gdf = gdf. drop(columns=['Datum'])
-    gdf['Messwert'] = pd.to_numeric(gdf['Messwert'])
-    print('vor Operation: ', len(gdf))
+class gwdata_DE_SH():
     
     
-    setdays = []
-    setlocs = []
-    
-    
-    for idx,i in gdf.iterrows():
-        if idx.date() not in setdays:
-            setdays.append(idx.date())
-            #setlocs.append(gdf.index.get_loc(idx))
-            setlocs.append(idx)
-            
-    for i,j in zip(gdf.index[0:-1], gdf.index[1:]):
-        if (j-i).days > 1:
-            print(j,i, (j-i).days)
-    print('setdays: ', len(setdays), (gdf.index[-1]-gdf.index[0]).days)
-    # gdf = gdf.loc[setlocs]
-    # print('nach Operation: ', len(gdf))    
-    # start = dt.datetime(2015, 4, 6)
-    # end = dt.datetime(2021, 12, 30)
-    return setdays
+    def __init__(self, gwfile,
+                        layer  = None,
+                        engine = 'fiona',
+                        cycle  = 1):
         
+        self.__datafile = gwfile
+        self.__layer = layer
+        self.__engine= engine
+        self.__cycle = cycle
+        
+        self.__data = self.read_geofile(self.__datafile, self.__layer, self.__engine)
+        
+    def read_geofile(self, geofile, layer = None, engine='fiona'):
+
+        
+        cached_engine = gpd.options.io_engine
+        gpd.options.io_engine = engine
+        
+        if layer == None:
+            data = gpd.read_file(filename=geofile, engine=engine)
+        else:
+            data = gpd.read_file(filename=geofile, layer=layer, engine=engine)
+        
+        gpd.options.io_engine = cached_engine
+        
+        dt_index = []
+        for i in data['Datum']:
+            dt_index.append(datetime.strptime(i, '%d.%m.%Y %H:%M:%S'))
+        idx = pd.DatetimeIndex(dt_index)
+        data.index=idx
+        data = data.drop(columns=['Datum'])
+        data['Messwert'] = pd.to_numeric(data['Messwert'])
+        
+        #FOR DEBUGGING DATA       
+        for i,j in zip(data.index[0:-1], data.index[1:]):
+            if (j-i).days > 1:
+                print(j,i, (j-i).days)
+
+        return data
+        
+    def resample(self, data, resampling_t=1):
+        # this isn t dome
+        setdays = []
+        setlocs = []
+    
+    
+        for idx,i in data.iterrows():
+            if idx.date() not in setdays:
+                setdays.append(idx.date())
+                #setlocs.append(gdf.index.get_loc(idx))
+         
+    @property
+    def data(self):
+        return self.__data
+        
+
+
