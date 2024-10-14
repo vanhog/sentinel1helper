@@ -21,26 +21,42 @@ datepattern = 'date_\d{8}'
 
 
 class gmdata():
-    
-    def __init__(self, gmdatafile,
-                        layer  = None,
-                        engine = 'fiona',
+    # the index needs to be of type dt_dats
+    # test = gmdf.data[gmdf.dt_dats]
+    # test = test.loc[:,:gmdf.find_first_cycle()]
+    def __init__(self, gm_dataframe,
                         cycle  = 6):
         
-        self.__data = self.read_geofile(gmdatafile, layer, engine)
+        self.dt_dats                = []
+        self.nodats                 = []
+        self.dt_dats_asDays         = []
+        self.dt_dats_padded         = []
+        self.dt_dats_padded_asDays  = []
         
-        self.dt_dats,\
-        self.dats,\
-        self.nodats, \
-        self.dt_dats_asDays = self.get_numpy64_dates(self.__data.columns)
-        self.dt_dats_asDays = np.array(self.dt_dats_asDays)
-
-        self.__data[self.dats] = self.__data[self.dats].astype('float')
+        self.__data                 = gm_dataframe
+        self.__cycle                = cycle 
         
-        self.dt_dats_padded = []
-        self.dt_dats_padded_asDays = []
+        self.get_day_system()
+        
         self.pad_days(cycle)
         
+        
+    def get_day_system(self):   
+    
+        
+        for i in self.__data.columns:
+            #print(type(i), isinstance(i, pd.Timestamp))
+            if isinstance(i, pd.Timestamp):
+                self.dt_dats.append(i)
+            else:
+                self.nodats.append(i)
+        
+        for i in self.dt_dats[1:]:
+            self.dt_dats_asDays.append((i - self.dt_dats[0]).days)
+        
+        self.dt_dats_asDays = [int(i) for i in self.dt_dats_asDays]
+
+    
     @property
     def len(self):
         return len(self.__data)
@@ -48,82 +64,49 @@ class gmdata():
     @property
     def data(self):
         return self.__data
+    @property 
+    def cycle(self):
+        return self.__cycle
+    @property
+    def set_cycle(self, c):
+        self.__cycle = c
+        self.pad_days(c)
+    
+    def find_first_cycle(self, cycle_period=6):
+        for i,j in zip(self.dt_dats[0:-1], self.dt_dats[1:]):
+            if (j-i).days == 6:
+                return i
+            
+        return -1
+    
+    def find_last_cycle(self, cycle_period=6):
+        for i,j in zip(reversed(self.dt_dats[0:-1]), reversed(self.dt_dats[1:])):
+            print(j-i, (j-i).days)
+            if (j-i).days == 6:
+                return j 
+            
+        return -1
         
-    def read_geofile(self, geofile, layer = None, engine='fiona'):
-
-        
-        cached_engine = gpd.options.io_engine
-        gpd.options.io_engine = engine
-        
-        if layer == None:
-            out_file = gpd.read_file(filename=geofile, engine=engine)
-        else:
-            out_file = gpd.read_file(filename=geofile, layer=layer, engine=engine)
-        
-        gpd.options.io_engine = cached_engine
-
-        return out_file
 
     def pad_days(self, cycle = 6):
-        dt_dats_padded = []
-        dt_dats_padded_asDays = [0]
+
+        self.dt_dats_padded_asDays = [0]
         old_date = self.dt_dats[0]
         while old_date <= self.dt_dats[-1]:
-            dt_dats_padded.append(old_date)
+            self.dt_dats_padded.append(old_date)
             old_date = old_date + dt.timedelta(cycle)
             
-        for i in dt_dats_padded[1:]:
-            dt_dats_padded_asDays.append((i - dt_dats_padded[0]).days)
+        for i in self.dt_dats_padded[1:]:
+            self.dt_dats_padded_asDays.append(int((i - self.dt_dats_padded[0]).days))
             
-        self.dt_dats_padded         = dt_dats_padded
-        self.dt_dats_padded_asDays  = np.array(dt_dats_padded_asDays).astype('float')
-        
-    def get_datetime_dates(self, in_list):
-        
-        out_dt_dats = []
-        out_dats    = []
-        out_nodats  = []
-        out_dt_dats_asDays = [0]       
 
+        self.dt_dats_padded_asDays  = \
+            np.array(self.dt_dats_padded_asDays).astype('int').tolist()
         
-        for i in in_list:
-            if re.match(datepattern, i):
-                out_dt_dats.append(datetime.strptime(i[-8:], "%Y%m%d"))
-                out_dats.append(i) 
-            else:
-                out_nodats.append(i)
-         
-        for i in out_dt_dats[1:]:
-            out_dt_dats_asDays.append((i - out_dt_dats[0]).days)
-    
-        out_dt_dats_asDays = [float(i) for i in out_dt_dats_asDays]
-        
-        return out_dt_dats, out_dats, out_nodats, out_dt_dats_asDays
-    
-    def get_numpy64_dates(self, in_list):
-    
-        out_dt_dats = []
-        out_dats    = []
-        out_nodats  = []
-        out_dt_dats_asDays = [0]       
-
-        
-        for i in in_list:
-            if re.match(datepattern, i):
-                out_dt_dats.append(datetime64(i[-8:-4]+'-'+i[-4:-2]+'-'+i[-2:]))
-                out_dats.append(i)
-            else:
-                out_nodats.append(i)
-                
-        for i in out_dt_dats[1:]:
-            out_dt_dats_asDays.append((i - out_dt_dats[0]).astype('float'))
-    
-        return out_dt_dats, out_dats, out_nodats, out_dt_dats_asDays
-
 
     def get_ts(self, in_dataframe):
         
-        return np.array(in_dataframe[self.dats].values.astype('float32'))
+        return np.array(in_dataframe[self.dt_dats].values.astype('float32'))
     
     def pad_ts(self, in_array):
         result = np.interp(self.dt_dats_padded_asDays, self.dt_dats_asDays, in_array)
@@ -244,5 +227,3 @@ class gwdata_DE_SH():
     def data(self):
         return self.__data
         
-
-

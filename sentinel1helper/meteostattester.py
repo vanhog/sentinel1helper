@@ -30,7 +30,7 @@ dfdata = df.data
 df_part = dfdata[dfdata['PS_ID']==27540388]
 df_part = dfdata[dfdata['PS_ID']=='27534195']
 #df_part = dfdata[dfdata['PS_ID']==26319089]
-ts_data = df_part[dats]#.to_numpy(dtype='float')
+ts_data = df_part[df.dats]#.to_numpy(dtype='float')
 
 
 

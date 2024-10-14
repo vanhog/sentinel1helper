@@ -63,6 +63,8 @@ fab_aligneddiffs /= np.max(np.abs(fab_aligneddiffs),axis=0)
 
 plt.stem(data.dt_dats_padded,  fadiffs)
 plt.stem(data.dt_dats_padded, fab_aligneddiffs, 'r')
+plt.figure()
+plt.plot(fadiffs, fab_aligneddiffs, '.')
 print(np.corrcoef(fadiffs, fab_aligneddiffs))
 # fdiff = [i-j if j else 0 for i,j in zip(fab_aligneddiffs, fadiffs)]
 #
