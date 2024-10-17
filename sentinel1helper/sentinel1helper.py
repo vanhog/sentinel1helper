@@ -29,8 +29,9 @@ class gmdata():
         
         self.dt_dats                = []
         self.nodats                 = []
-        self.dt_dats_asDays         = []
+        self.dt_dats_asDays         = [0]
         self.dt_dats_padded         = []
+        self.dt_dats_diffs          = []
         self.dt_dats_padded_asDays  = []
         
         self.__data                 = gm_dataframe
@@ -55,7 +56,11 @@ class gmdata():
             self.dt_dats_asDays.append((i - self.dt_dats[0]).days)
         
         self.dt_dats_asDays = [int(i) for i in self.dt_dats_asDays]
-
+        
+        for i,j in zip(self.dt_dats[0:-1], self.dt_dats[1:]):
+            self.dt_dats_diffs.append((j-i).days)
+            
+        self.dt_dats_diffs  = [int(i) for i in self.dt_dats_diffs]
     
     @property
     def len(self):
@@ -81,12 +86,12 @@ class gmdata():
     
     def find_last_cycle(self, cycle_period=6):
         for i,j in zip(reversed(self.dt_dats[0:-1]), reversed(self.dt_dats[1:])):
-            print(j-i, (j-i).days)
             if (j-i).days == 6:
                 return j 
             
         return -1
         
+
 
     def pad_days(self, cycle = 6):
 
