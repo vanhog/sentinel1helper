@@ -129,7 +129,17 @@ class gmdata():
         a = self.pad_ts(self.get_ts(in_df))
         return a
     
-    def get_diffs(self, in_data):
+    def get_diffs(self):
+        diff_list = []
+        
+        for idx,row in self.__data[self.dt_dats].iterrows():
+            for i,j in zip(row[0:-1], row[1:]):
+                diff_list.append(float(j-i))
+                
+                
+        return np.array(diff_list)
+    
+    def get_diffs2(self, in_data):
         if isinstance(in_data, np.ndarray):
             intermediatets = in_data 
         else:
