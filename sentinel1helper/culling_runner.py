@@ -124,7 +124,7 @@ sent1AB = sh1.gmdata(gmdf.data.loc[:, gmdf.find_first_cycle():gmdf.find_last_cyc
 # plt.show()
 
 # for i in range(0,len(sent1AB.data)):
-for i in range(112,113):
+for i in range(75,76):
     do_peak_culling_f(sent1AB.data.loc[i], sent1AB, toplot=True)
     
 print('happy day')
