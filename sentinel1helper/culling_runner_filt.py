@@ -110,7 +110,7 @@ def do_peak_culling_f(in_ts, in_reference_gmdf, f=5.56, toplot=False):
         ts_culled_diff = []
         for i, j in zip(np.cumsum(cull_diffs), in_ts):
             ts_culled_diff.append(j - i)
-        #plt.stem(in_reference_gmdf.dt_dats, ts_diffs)
+        plt.stem(in_reference_gmdf.dt_dats, ts_diffs)
         plt.stem(in_reference_gmdf.dt_dats, ts_culled_diff, linefmt='khaki')
         plt.show()
     return np.cumsum(cull_diffs)
@@ -127,7 +127,7 @@ sent1AB = sh1.gmdata(gmdf.data.loc[:, gmdf.find_first_cycle():gmdf.find_last_cyc
 # for i in range(0,len(sent1AB.data)):
 #for i in range(75,76):
 for i in range(93, 94):
-    cull_ts = do_peak_culling_f(sent1AB.data.loc[i], sent1AB, toplot=True)
+    do_peak_culling_f(sent1AB.data.loc[i], sent1AB, toplot=True)
     
 print('happy day')
 

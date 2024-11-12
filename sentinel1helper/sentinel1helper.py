@@ -15,6 +15,8 @@ from scipy import signal as sg
 from meteostat import Stations, Daily, Point
 from matplotlib import _rc_params_in_file
 
+from typing import Self
+
 
 datepattern = 'date_\d{8}'
 
@@ -40,6 +42,9 @@ class gmdata():
         self.get_day_system()
         
         self.pad_days(cycle)
+    
+
+     
         
         
     def get_day_system(self):   
