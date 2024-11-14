@@ -44,6 +44,24 @@ class gmdata():
         self.pad_days(cycle)
     
 
+    def resample_timeline(self, cycle = None):
+        
+        if cycle:
+            cycle = cycle
+        else:
+            cycle = self.__cycle
+        this_dats_padded        = []
+        this_dats_padded_asDays = [0]
+        #dt_dats_padded_asDays = [0]
+        old_date = self.dt_dats[0]
+        while old_date <= self.dt_dats[-1]:
+            this_dats_padded.append(old_date)
+            old_date = old_date + dt.timedelta(cycle)
+            
+        for i in this_dats_padded[1:]:
+            this_dats_padded_asDays.append(int((i - this_dats_padded[0]).days))
+            
+        return this_dats_padded, this_dats_padded_asDays
      
         
         
