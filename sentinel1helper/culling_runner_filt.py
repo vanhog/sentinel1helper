@@ -116,6 +116,20 @@ def do_peak_culling_f(in_ts, in_reference_gmdf, f=5.56, toplot=False):
     return np.cumsum(cull_diffs)
 
 
+def resample_ts(r_tl_asDays, tl_asDays, ts):
+    r_ts = np.interp(r_tl_asDays, tl_asDays, ts)
+    return r_ts
+
+def filt_ts(ts, omega_g, fs):
+    sos = sg.butter(3, omega_g, 'lp', fs=fs, output='sos')
+    filtered = sg.sosfiltfilt(sos, erg)
+    return filtered
+
+
+def get_mv_ts_from_lin_reg(in_ts, in_dt_dats_asDays):
+    regval = np.polyfit(in_dt_dats_asDays, in_ts,1)
+    valerg = np.polyval(regval, in_dt_dats_asDays)
+    return valerg
 gmdf = sh1.gmdata(df)
 sent1AB = sh1.gmdata(gmdf.data.loc[:, gmdf.find_first_cycle():gmdf.find_last_cycle()])
 # print(mv_from_lin_regression(sent1AB.data.loc[15], sent1AB), gmdf.data.loc[15]['mean_velocity'], \
