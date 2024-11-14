@@ -45,6 +45,7 @@ def mv_from_lin_regression(in_ts, in_reference_gmdf):
 
     return regval[0]*365
 
+
 gmdf = sh1.gmdata(df)
 sent1AB = sh1.gmdata(gmdf.data.loc[:,gmdf.find_first_cycle():gmdf.find_last_cycle()])
 # print(mv_from_lin_regression(sent1AB.data.loc[15], sent1AB), gmdf.data.loc[15]['mean_velocity'], \
