@@ -60,15 +60,9 @@ class gmdata():
             
         for i in this_dats_padded[1:]:
             this_dats_padded_asDays.append(int((i - this_dats_padded[0]).days))
-        
-        for i in this_dats_padded:
-            print(isinstance(i, pd.Timestamp))
             
         return this_dats_padded, this_dats_padded_asDays
-            #
-            # # dt_dats_padded_asDays  = \
-            # #     np.array(dt_dats_padded_asDays).astype('int').tolist()
-                
+
 
         
         
