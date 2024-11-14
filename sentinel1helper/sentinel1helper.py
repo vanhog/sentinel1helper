@@ -15,6 +15,7 @@ from scipy import signal as sg
 from meteostat import Stations, Daily, Point
 from matplotlib import _rc_params_in_file
 
+from typing import Self
 
 datepattern = 'date_\d{8}'
 
@@ -39,7 +40,36 @@ class gmdata():
         
         self.get_day_system()
         
-        self.pad_days(cycle)
+        #self.pad_days(cycle)
+        
+
+        
+    def resample_timeline(self, cycle = None):
+        
+        if cycle:
+            cycle = cycle
+        else:
+            cycle = self.__cycle
+        this_dats_padded        = []
+        this_dats_padded_asDays = [0]
+        #dt_dats_padded_asDays = [0]
+        old_date = self.dt_dats[0]
+        while old_date <= self.dt_dats[-1]:
+            this_dats_padded.append(old_date)
+            old_date = old_date + dt.timedelta(cycle)
+            
+        for i in this_dats_padded[1:]:
+            this_dats_padded_asDays.append(int((i - this_dats_padded[0]).days))
+        
+        for i in this_dats_padded:
+            print(isinstance(i, pd.Timestamp))
+            
+        return this_dats_padded, this_dats_padded_asDays
+            #
+            # # dt_dats_padded_asDays  = \
+            # #     np.array(dt_dats_padded_asDays).astype('int').tolist()
+                
+
         
         
     def get_day_system(self):   
@@ -93,20 +123,7 @@ class gmdata():
         
 
 
-    def pad_days(self, cycle = 6):
 
-        self.dt_dats_padded_asDays = [0]
-        old_date = self.dt_dats[0]
-        while old_date <= self.dt_dats[-1]:
-            self.dt_dats_padded.append(old_date)
-            old_date = old_date + dt.timedelta(cycle)
-            
-        for i in self.dt_dats_padded[1:]:
-            self.dt_dats_padded_asDays.append(int((i - self.dt_dats_padded[0]).days))
-            
-
-        self.dt_dats_padded_asDays  = \
-            np.array(self.dt_dats_padded_asDays).astype('int').tolist()
         
 
     def get_ts(self, in_dataframe):
