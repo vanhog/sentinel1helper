@@ -142,7 +142,22 @@ sent1AB = sh1.gmdata(gmdf.data.loc[:, gmdf.find_first_cycle():gmdf.find_last_cyc
 #for i in range(75,76):
 for i in range(93, 94):
     do_peak_culling_f(sent1AB.data.loc[i], sent1AB, toplot=True)
-    
+
+pick = 75
+erg = []
+filt_erg = []
+new_lin_mv = []
+for i in range(pick,pick+1):
+    print(sent1AB.data.loc[i].values)
+    print(len(sent1AB.data.loc[i].values), len(sent1AB.dt_dats_asDays))
+    erg = resample_ts(r_tl[1], sent1AB.dt_dats_asDays, sent1AB.data.loc[i].values)
+    filt_erg = filt_ts(erg, 1./180, 1/6.)
+    filt_mv  = mv_from_lin_regression(filt_erg, r_tl[1])
+    mv_line  = get_mv_ts_from_lin_reg(filt_erg, r_tl[1])
+    print(len(erg))
+print(len(r_tl[0]), len(r_tl[1]))
+print(filt_mv, gmdf.data.loc[pick]['mean_velocity'])
+   
 print('happy day')
 
 # for i,j in zip(gmdf.data['mean_velocity'], new_lin_mv):
