@@ -42,11 +42,11 @@ def calc_new_meanDiff(in_ts, in_source_gmdf):
     return mean_diff * 365
 
 
-def mv_from_lin_regression(in_ts, in_reference_gmdf):
+def mv_from_lin_regression(in_ts, in_dt_dats_asDays):
     # supposed to become a measurement object's @property
     ts_diffs = []
 
-    regval = np.polyfit(in_reference_gmdf.dt_dats_asDays, in_ts, 1)
+    regval = np.polyfit(in_dt_dats_asDays, in_ts, 1)
 
     return regval[0] * 365
 
@@ -132,6 +132,8 @@ def get_mv_ts_from_lin_reg(in_ts, in_dt_dats_asDays):
     return valerg
 gmdf = sh1.gmdata(df)
 sent1AB = sh1.gmdata(gmdf.data.loc[:, gmdf.find_first_cycle():gmdf.find_last_cycle()])
+r_tl = sent1AB.resample_timeline() # r_tl = resampled time line
+
 # print(mv_from_lin_regression(sent1AB.data.loc[15], sent1AB), gmdf.data.loc[15]['mean_velocity'], \
 #       np.polyfit(sent1AB.dt_dats_asDays, sent1AB.data.loc[15],1)[0]*365)
 # plt.figure()
@@ -157,6 +159,10 @@ for i in range(pick,pick+1):
     print(len(erg))
 print(len(r_tl[0]), len(r_tl[1]))
 print(filt_mv, gmdf.data.loc[pick]['mean_velocity'])
+
+plt.figure()
+plt.plot()
+plt.plot(r_tl[0], filt_erg)
    
 print('happy day')
 
