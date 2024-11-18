@@ -8,6 +8,7 @@ from scipy import signal as sg
 import sentinel1helper as sh 
 import pandas as pd
 import numpy as np
+from IPython.core.pylabtools import figsize
 
 ## REAL DATA###################################################################
 in_file = '/home/hog/data/mscthesis/aoi_msc_gpk/tl5_l2b_aoi_msc_gpkg.gpkg'
@@ -19,9 +20,13 @@ out_layer = 'tl5_d_139_01_mscaoi_sent1ABmv'
 # in_file = '/media/data/dev/testdata/tl5_l2b_044_02_0001-0200.csv'
 # in_file = '/home/hog/data/mscthesis/aoi_msc_gpk/tl5_l2b_aoi_msc_gpkg.gpkg'
 in_file = '~/data/dev/testdata/tl5_l2b_044_01_001-200.gpkg'
+in_file = '/home/hog/data/dev/testdata/tl5_l2b_044_01_random200.gpkg'
+
 # in_layer = 'tl5_d_139_01_mscaoi'
 # out_layer = 'tl5_d_139_01_mscaoi_sent1ABmv'
 in_layer = 'tl5_l2b_a_044_01_001200_mscaoi'
+in_layer = 'A_117_02'
+
 print('start reading')
 # df = sh1r.read_bbd_tl5_gmfile(in_file, layer=in_layer, engine='pyogrio')
 df = sh1r.read_bbd_tl5_gmfile(in_file, layer=in_layer, engine='pyogrio')
@@ -50,8 +55,41 @@ def mv_from_lin_regression(in_ts, in_dt_dats_asDays):
 
     return regval[0] * 365
 
+def do_rmse_culling(in_ts, in_reference_gdmf, toplot=False):
+    this_trend = polytrend(in_reference_gdmf.dt_dats_asDays, in_ts)
+    culled_ts = []
+    culled_tl = []
+    trendfree_ts = [i-j for i,j in zip(in_ts, this_trend)]
+    this_std = np.std(trendfree_ts)
+    for i,j,k in zip(trendfree_ts, in_ts, in_reference_gdmf.dt_dats):
+        if i > 1*this_std:
+            next
+        elif i < -1*this_std:
+            next
+        else:
+            culled_ts.append(j)
+            culled_tl.append(k)    
+    culled_df = pd.DataFrame([culled_ts], columns=culled_tl)
+    culled_gmdf = sh1.gmdata(culled_df)
+    
+    if toplot:
+        plt.figure(figsize=[16,9])
+        plt.plot([in_reference_gdmf.dt_dats[0], in_reference_gdmf.dt_dats[-1]], [this_std, this_std])
+        plt.plot([in_reference_gdmf.dt_dats[0], in_reference_gdmf.dt_dats[-1]], [-this_std, -this_std])
 
-def do_peak_culling_f(in_ts, in_reference_gmdf, f=5.56, toplot=False):
+        plt.plot(in_reference_gdmf.dt_dats, trendfree_ts, label='trendfree')
+        plt.plot(culled_tl, culled_ts, '-o', color='red')
+        
+    return culled_gmdf
+
+
+def do_peak_culling_f(in_ts, in_reference_gmdf, f=55.6, toplot=False):
+    '''
+    Es gibt einen guten Grund, die Spitzen nicht abzuschneiden:
+    Wir wissen nämlich gar nicht, um was frü einen Scatterer es sich handelt:
+    So'n ordentlicher SH-Silagehaufen wächst in 6 Tagen schon mal mehr als f/4 mm und 
+    schrumpf ggf auch ebenso schnell. Besser drinlassen und zählen als Metakriterium.
+    '''
     isPeaky = True
     
     ts_var = np.var(in_ts)
@@ -63,8 +101,8 @@ def do_peak_culling_f(in_ts, in_reference_gmdf, f=5.56, toplot=False):
     
     plt.figure(figsize=[16, 9])
     plt.stem(in_reference_gmdf.dt_dats, ts_diffs)
-    plt.hlines(np.std(ts_diffs) + f / 2, in_reference_gmdf.dt_dats[0], in_reference_gmdf.dt_dats[-1])
-    plt.hlines(-(np.std(ts_diffs) + f / 2), in_reference_gmdf.dt_dats[0], in_reference_gmdf.dt_dats[-1])
+    plt.hlines(f / 4, in_reference_gmdf.dt_dats[0], in_reference_gmdf.dt_dats[-1])
+    plt.hlines(-(f / 4), in_reference_gmdf.dt_dats[0], in_reference_gmdf.dt_dats[-1])
     cull_diffs = ts_diffs
     cull_std = np.std(cull_diffs)
     dummy_diffs = []
@@ -75,11 +113,12 @@ def do_peak_culling_f(in_ts, in_reference_gmdf, f=5.56, toplot=False):
         isPeaky = False
         for i in cull_diffs:
             #if i > (cull_std + f / 4):
-            if i > f:    
+            if i > f/4.:    
                 dummy_diffs.append(i - f/4.)
                 isPeaky = True
+                print(i, f/4.)
             #elif i < -(cull_std + f / 4):
-            elif i < (-f):
+            elif i < (-f/4):
                 dummy_diffs.append(i + f/4.)
                 isPeaky = True
             else:
@@ -115,6 +154,10 @@ def do_peak_culling_f(in_ts, in_reference_gmdf, f=5.56, toplot=False):
         plt.show()
     return np.cumsum(cull_diffs)
 
+def polytrend(in_x, in_y):
+    polyfunc = np.polyfit(in_x, in_y, 1)
+    #print(polyfunc[0]*365)
+    return np.polyval(polyfunc, in_x)
 
 def resample_ts(r_tl_asDays, tl_asDays, ts):
     r_ts = np.interp(r_tl_asDays, tl_asDays, ts)
@@ -122,7 +165,7 @@ def resample_ts(r_tl_asDays, tl_asDays, ts):
 
 def filt_ts(ts, omega_g, fs):
     sos = sg.butter(3, omega_g, 'lp', fs=fs, output='sos')
-    filtered = sg.sosfiltfilt(sos, erg)
+    filtered = sg.sosfiltfilt(sos, ts)
     return filtered
 
 
@@ -130,6 +173,8 @@ def get_mv_ts_from_lin_reg(in_ts, in_dt_dats_asDays):
     regval = np.polyfit(in_dt_dats_asDays, in_ts,1)
     valerg = np.polyval(regval, in_dt_dats_asDays)
     return valerg
+
+
 gmdf = sh1.gmdata(df)
 sent1AB = sh1.gmdata(gmdf.data.loc[:, gmdf.find_first_cycle():gmdf.find_last_cycle()])
 r_tl = sent1AB.resample_timeline() # r_tl = resampled time line
@@ -141,11 +186,13 @@ r_tl = sent1AB.resample_timeline() # r_tl = resampled time line
 # plt.show()
 
 # for i in range(0,len(sent1AB.data)):
+pick = 15
 #for i in range(75,76):
-for i in range(93, 94):
-    do_peak_culling_f(sent1AB.data.loc[i], sent1AB, toplot=True)
+for i in range(pick, pick+1):
+    culled_ts = do_peak_culling_f(sent1AB.data.loc[i], sent1AB, toplot=False)
 
-pick = 75
+
+
 erg = []
 filt_erg = []
 new_lin_mv = []
@@ -153,18 +200,48 @@ for i in range(pick,pick+1):
     print(sent1AB.data.loc[i].values)
     print(len(sent1AB.data.loc[i].values), len(sent1AB.dt_dats_asDays))
     erg = resample_ts(r_tl[1], sent1AB.dt_dats_asDays, sent1AB.data.loc[i].values)
+    cullerg = resample_ts(r_tl[1], sent1AB.dt_dats_asDays, culled_ts) 
     filt_erg = filt_ts(erg, 1./180, 1/6.)
     filt_mv  = mv_from_lin_regression(filt_erg, r_tl[1])
+    filt_cullerg = filt_ts(cullerg, 1/180., 1/6.)
     mv_line  = get_mv_ts_from_lin_reg(filt_erg, r_tl[1])
-    print(len(erg))
+    
+
 print(len(r_tl[0]), len(r_tl[1]))
 print(filt_mv, gmdf.data.loc[pick]['mean_velocity'])
 
-plt.figure()
-plt.plot()
-plt.plot(r_tl[0], filt_erg)
-   
+plt.figure(figsize=[16,9])
+
+plt.plot(sent1AB.dt_dats, sent1AB.data.loc[pick].values,'gray')
+plt.plot(r_tl[0], erg, 'lightblue')
+plt.plot(r_tl[0], filt_ts(erg, 1./180, 1/6.), 'b')
+plt.plot(r_tl[0], polytrend(r_tl[1], filt_ts(erg, 1/180., 1/6.)), label='unculled')
+
+
+plt.plot(r_tl[0], cullerg,':r')
+plt.plot(r_tl[0], filt_ts(cullerg, 1/180., 1/6.), 'pink')
+plt.plot(r_tl[0], polytrend(r_tl[1], filt_ts(cullerg, 1/180., 1/6.)), label='culled')
+plt.legend()
+
+plt.figure(figsize=[16,9])
+plt.plot(sent1AB.dt_dats, sent1AB.data.loc[pick].values)
+this_rmse_culled_ts = do_rmse_culling(sent1AB.data.loc[pick], sent1AB, toplot=False)
+plt.plot(this_rmse_culled_ts.dt_dats, this_rmse_culled_ts.data.values[0],'o')
+plt.plot(this_rmse_culled_ts.dt_dats, polytrend(this_rmse_culled_ts.dt_dats_asDays, this_rmse_culled_ts.data.values[0]))
+plt.plot(sent1AB.dt_dats, polytrend(sent1AB.dt_dats_asDays, sent1AB.data.loc[pick].values), 'r.')
+#plt.show()
 print('happy day')
+
+for i in range(0, len(sent1AB.data)):
+    mv = gmdf.data.loc[i]['mean_velocity']
+    omv = mv_from_lin_regression(sent1AB.data.loc[i], sent1AB.dt_dats_asDays)
+    
+    rmse_ts = do_rmse_culling(sent1AB.data.loc[i], sent1AB, toplot=False)
+    nmv = mv_from_lin_regression(rmse_ts.data.loc[0].values, rmse_ts.dt_dats_asDays)
+    print(i, '\t', mv, '\t', omv, '\t', nmv)
+#
+print('happier days')
+# WHAT ABOUT THE FREQUENY SPECTRUM
 
 # for i,j in zip(gmdf.data['mean_velocity'], new_lin_mv):
 #     print(i,j)
