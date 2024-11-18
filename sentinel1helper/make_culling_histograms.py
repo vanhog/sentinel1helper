@@ -223,6 +223,12 @@ plt.hist(nmv, bins=bins, density = True, histtype='stepfilled', color='cornflowe
 
 plt.hist(mv, bins=bins, density = True, histtype='step', color='orange', linewidth=2, label='mean_velocity')
 plt.hist(omv, bins=bins, density = True, histtype='step', color='lime', linewidth=2, label='unculled mean velo')
-plt.legend()
+plt.rcParams['figure.facecolor'] = 'white'
+plt.rcParams['legend.title_fontsize'] = 14
+plt.xticks(fontsize=18)
+plt.yticks(fontsize=18)
+
+legend_properties = {'weight':'bold'}
+plt.legend(fontsize = 14, title_fontproperties={'weight':'bold'}, title='Mean velocity')
 plt.show()
 print('happier days')
