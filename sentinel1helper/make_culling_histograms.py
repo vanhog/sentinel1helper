@@ -95,12 +95,12 @@ def do_peak_culling_f(in_ts, in_reference_gmdf, f=55.6, toplot=False):
     for i, j in zip(in_ts[0:-1], in_ts[1:]):
         ts_diffs.append(float(j - i))
         
-    print(ts_var)
-    
-    plt.figure(figsize=[16, 9])
-    plt.stem(in_reference_gmdf.dt_dats, ts_diffs)
-    plt.hlines(f / 4, in_reference_gmdf.dt_dats[0], in_reference_gmdf.dt_dats[-1])
-    plt.hlines(-(f / 4), in_reference_gmdf.dt_dats[0], in_reference_gmdf.dt_dats[-1])
+    #print(ts_var)
+    if toplot:
+        plt.figure(figsize=[16, 9])
+        plt.stem(in_reference_gmdf.dt_dats, ts_diffs)
+        plt.hlines(f / 4, in_reference_gmdf.dt_dats[0], in_reference_gmdf.dt_dats[-1])
+        plt.hlines(-(f / 4), in_reference_gmdf.dt_dats[0], in_reference_gmdf.dt_dats[-1])
     cull_diffs = ts_diffs
     cull_std = np.std(cull_diffs)
     dummy_diffs = []
@@ -114,7 +114,7 @@ def do_peak_culling_f(in_ts, in_reference_gmdf, f=55.6, toplot=False):
             if i > f/4.:    
                 dummy_diffs.append(i - f/4.)
                 isPeaky = True
-                print(i, f/4.)
+                #print(i, f/4.)
             #elif i < -(cull_std + f / 4):
             elif i < (-f/4):
                 dummy_diffs.append(i + f/4.)
@@ -123,9 +123,10 @@ def do_peak_culling_f(in_ts, in_reference_gmdf, f=55.6, toplot=False):
                 dummy_diffs.append(i)
         cull_diffs = dummy_diffs
         dummy_diffs = []
-        plt.stem(in_reference_gmdf.dt_dats, cull_diffs, linefmt=mycolors[ccounter])
+        if toplot:
+            plt.stem(in_reference_gmdf.dt_dats, cull_diffs, linefmt=mycolors[ccounter])
         ccounter += 1
-        print('ccounter:\t', ccounter)
+        #print('ccounter:\t', ccounter)
 
     if toplot:
         
@@ -188,9 +189,11 @@ nmv = []
 for i in range(0, len(sent1AB.data)):
     mv.append(gmdf.data.loc[i]['mean_velocity'])
     omv.append(mv_from_lin_regression(sent1AB.data.loc[i], sent1AB.dt_dats_asDays))
-    
-    rmse_ts = do_rmse_culling(sent1AB.data.loc[i], sent1AB, toplot=False)
-    nmv.append(mv_from_lin_regression(rmse_ts.data.loc[0].values, rmse_ts.dt_dats_asDays))
+    # PEAK RMSE
+    #rmse_ts = do_rmse_culling(sent1AB.data.loc[i], sent1AB, toplot=False)
+    cull_ts = do_peak_culling_f(sent1AB.data.loc[i], sent1AB)
+    nmv.append(mv_from_lin_regression(cull_ts, sent1AB.dt_dats_asDays))
+    #nmv.append(mv_from_lin_regression(rmse_ts.data.loc[0].values, rmse_ts.dt_dats_asDays))
  #   print(i, '\t', mv, '\t', omv, '\t', nmv)
 
 print('happy day')
@@ -218,17 +221,19 @@ plt.plot(xkde, ykde_nmv, color='lime')
 plt.xlim([min(be), max(be)])
 
 plt.figure(figsize=[16,9])
-plt.hist(nmv, bins=bins, density = True, histtype='stepfilled', color='cornflowerblue', label='rmse-culled mean velo')
+# PEAK RMSE
+plt.hist(nmv, bins=bins, density = True, histtype='stepfilled', color='cornflowerblue', label='Peak-culled Mean Velocity')
 #plt.hist(nmv, bins=bins, density = True, histtype='step', color='mediumblue', linewidth=2)
 
-plt.hist(mv, bins=bins, density = True, histtype='step', color='orange', linewidth=2, label='mean_velocity')
-plt.hist(omv, bins=bins, density = True, histtype='step', color='lime', linewidth=2, label='unculled mean velo')
+plt.hist(mv, bins=bins, density = True, histtype='step', color='orange', linewidth=2, label='Mean Velocity')
+plt.hist(omv, bins=bins, density = True, histtype='step', color='lime', linewidth=2, label='Unculled Mean Velocity')
 plt.rcParams['figure.facecolor'] = 'white'
 plt.rcParams['legend.title_fontsize'] = 14
 plt.xticks(fontsize=18)
 plt.yticks(fontsize=18)
-
+plt.xlabel('Mean velocity [mm/a]', fontsize=28, fontweight='bold')
+plt.ylabel('PDF', fontsize=28, fontweight='bold')
 legend_properties = {'weight':'bold'}
-plt.legend(fontsize = 14, title_fontproperties={'weight':'bold'}, title='Mean velocity')
+plt.legend(fontsize = 14, title_fontproperties={'weight':'bold'}, title='Data')
 plt.show()
 print('happier days')

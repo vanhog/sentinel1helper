@@ -213,23 +213,37 @@ print(filt_mv, gmdf.data.loc[pick]['mean_velocity'])
 plt.figure(figsize=[16,9])
 
 plt.plot(sent1AB.dt_dats, sent1AB.data.loc[pick].values,'gray')
-plt.plot(r_tl[0], erg, 'lightblue')
-plt.plot(r_tl[0], filt_ts(erg, 1./180, 1/6.), 'b')
-plt.plot(r_tl[0], polytrend(r_tl[1], filt_ts(erg, 1/180., 1/6.)), label='unculled')
+plt.plot(r_tl[0], erg, 'lightblue', label= 'Data Unculled')
+plt.plot(r_tl[0], filt_ts(erg, 1./180, 1/6.), 'b', label='Unculled Filtered f=180d')
+plt.plot(r_tl[0], polytrend(r_tl[1], filt_ts(erg, 1/180., 1/6.)), label='Trend Unculled')
 
 
-plt.plot(r_tl[0], cullerg,':r')
-plt.plot(r_tl[0], filt_ts(cullerg, 1/180., 1/6.), 'pink')
-plt.plot(r_tl[0], polytrend(r_tl[1], filt_ts(cullerg, 1/180., 1/6.)), label='culled')
-plt.legend()
+plt.plot(r_tl[0], cullerg,':r', label='Data Culled')
+plt.plot(r_tl[0], filt_ts(cullerg, 1/180., 1/6.), 'pink', label='Culled Filtered f=180d')
+plt.plot(r_tl[0], polytrend(r_tl[1], filt_ts(cullerg, 1/180., 1/6.)), label='Trend Culled')
+plt.rcParams['figure.facecolor'] = 'white'
+plt.rcParams['legend.title_fontsize'] = 14
+plt.xticks(fontsize=18)
+plt.yticks(fontsize=18)
+plt.xlabel('Time', fontsize=28, fontweight='bold')
+plt.ylabel('Cum. Motion in LOS [mm]', fontsize=28, fontweight='bold')
+legend_properties = {'weight':'bold'}
+plt.legend(fontsize = 14, title_fontproperties={'weight':'bold'}, title='Legend')
+
 
 plt.figure(figsize=[16,9])
 plt.plot(sent1AB.dt_dats, sent1AB.data.loc[pick].values)
 this_rmse_culled_ts = do_rmse_culling(sent1AB.data.loc[pick], sent1AB, toplot=False)
-plt.plot(this_rmse_culled_ts.dt_dats, this_rmse_culled_ts.data.values[0],'o')
-plt.plot(this_rmse_culled_ts.dt_dats, polytrend(this_rmse_culled_ts.dt_dats_asDays, this_rmse_culled_ts.data.values[0]))
-plt.plot(sent1AB.dt_dats, polytrend(sent1AB.dt_dats_asDays, sent1AB.data.loc[pick].values), 'r.')
-#plt.show()
+plt.plot(this_rmse_culled_ts.dt_dats, this_rmse_culled_ts.data.values[0],'o', label='Data RMSE-culled')
+plt.plot(this_rmse_culled_ts.dt_dats, polytrend(this_rmse_culled_ts.dt_dats_asDays, this_rmse_culled_ts.data.values[0]), label='Trend RMSE-culled')
+plt.plot(sent1AB.dt_dats, polytrend(sent1AB.dt_dats_asDays, sent1AB.data.loc[pick].values), 'r.', label='Trend Unculled')
+plt.xticks(fontsize=18)
+plt.yticks(fontsize=18)
+plt.xlabel('Time', fontsize=28, fontweight='bold')
+plt.ylabel('Cum. Motion in LOS [mm]', fontsize=28, fontweight='bold')
+legend_properties = {'weight':'bold'}
+plt.legend(fontsize = 14, title_fontproperties={'weight':'bold'}, title='Legend')
+plt.show()
 print('happy day')
 
 for i in range(0, len(sent1AB.data)):
