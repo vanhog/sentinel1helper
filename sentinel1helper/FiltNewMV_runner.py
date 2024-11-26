@@ -35,11 +35,32 @@ def mv_from_lin_regression(in_ts, in_reference_gmdf):
 
     return regval[0]*365
 
+def polytrend(in_x, in_y):
+    polyfunc = np.polyfit(in_x, in_y, 1)
+    #print(polyfunc[0]*365)
+    return np.polyval(polyfunc, in_x)
+
+def resample_ts(r_tl_asDays, tl_asDays, ts):
+    r_ts = np.interp(r_tl_asDays, tl_asDays, ts)
+    return r_ts
+
+def filt_ts(ts, omega_g, fs):
+    sos = sg.butter(3, omega_g, 'lp', fs=fs, output='sos')
+    filtered = sg.sosfiltfilt(sos, ts)
+    return filtered
+
+
+def get_mv_ts_from_lin_reg(in_ts, in_dt_dats_asDays):
+    regval = np.polyfit(in_dt_dats_asDays, in_ts,1)
+    valerg = np.polyval(regval, in_dt_dats_asDays)
+    return valerg
+
+
+
+
 gmdf = sh1.gmdata(df)
 sent1AB = sh1.gmdata(gmdf.data.loc[:,gmdf.find_first_cycle():gmdf.find_last_cycle()])
 r_tl = sent1AB.resample_timeline() # r_tl = resampled time line
-
-
 pick = 15
 
 
