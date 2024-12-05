@@ -30,7 +30,7 @@ import numpy as np
 from kite.scene import Scene, SceneConfig
 
 from timeit import default_timer as timer
-from bbd2kite2024 import tl5_layer
+
 
 
 
@@ -84,7 +84,7 @@ def read_geofile(geofile, layer=None, engine='fiona',
     column_list_TL5 = ['PS_ID', 'mean_velocity', 
                'var_mean_velocity', 'temp_coh', 
                'LOS_Up', 'LOS_North', 'LOS_East']
-    column_list_TL5b = ['PS_ID', 'nw_mv', 
+    column_list_TL5b = ['PS_ID', 'nw_mv_f', 
                'var_mean_velocity', 'temp_coh', 
                'LOS_Up', 'LOS_North', 'LOS_East']
     
@@ -276,7 +276,8 @@ start = timer()
 
 tl5_file  = '/media/hog/docCrucial1T/tools/nextcloud/kandidat/Roenne_overview/aoi_msc_gpk/tl5_l2b_aoi_msc_gpkg.gpkg'
 tl5_file  = '/home/hog/data/mscthesis/aoi_msc_gpk/tl5_l2b_aoi_msc_gpkg.gpkg'
-tl5_layer = 'tl5_d_139_01_mscaoi_sent1ABmv'
+tl5_file  = '/media/hog/hogsandisc/data/mscthesisdata/aoi_msc_gpk/tl5_l2b_aoi_msc_gpkg.gpkg'
+tl5_layer = 'tl5_d_139_01_mscaoi_Sent1ABfilt'
 
 
 scene = bbd2kite(
