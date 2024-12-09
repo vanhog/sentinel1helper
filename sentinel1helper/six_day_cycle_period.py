@@ -8,14 +8,14 @@ Created on Mon Jul 29 12:42:57 2024
 
 import os.path as op
 import re
-import shapefile
-import utm
+#import shapefile
+#import utm
 from scipy import stats
 import geopandas 
 import pyogrio
 import numpy as np
 from datetime import datetime
-from osgeo import ogr
+#from osgeo import ogr
 from matplotlib import pyplot as plt
 
 
@@ -292,12 +292,14 @@ def ts_plot(geofile, layer, ts):
     
 #EXE#########################EXE###########################################EXE
 tl5_file  = '/media/hog/docCrucial1T/tools/nextcloud/kandidat/Roenne_overview/aoi_msc_gpk/tl5_l2b_aoi_msc_gpkg.gpkg'
+tl5_file  = '/media/hog/hogsandisc/data/mscthesisdata/aoi_msc_gpk/tl5_l2b_aoi_msc_gpkg.gpkg'
 tl5_layer = 'tl5_a_044_02_mscaoi'
 
 #a = estimate_missing_data(tl5_file, tl5_layer, engine='pyogrio')
 
 ts = ts_plot(tl5_file, tl5_layer, '27534225')
-ts.plot()
+plt.plot(ts.values)
+plt.show()
 
 # a=sketch_acquisitions(tl5_file, layers=[['tl5_d_066_02_mscaoi_6dcp', 
 #                                           '20160929',
